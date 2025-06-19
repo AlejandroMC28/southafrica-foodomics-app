@@ -40,7 +40,7 @@ def compute_feature_proportions(quant_df: pd.DataFrame, metadata_df: pd.DataFram
     # Step 6: Reattach row ID
     grouped_with_id = quant_df[["row ID", "row m/z", "row retention time"]].join(grouped)
 
-    return grouped_with_id
+    return grouped_with_id, grouped.columns.tolist()
 
 def merge_feature_annotations(
     proportions_df: pd.DataFrame,

@@ -21,9 +21,9 @@ if quant_file and metadata_file:
     metadata_df = load_uploaded_file(metadata_file)
 
     st.success("Files loaded. Computing proportions...")
-    proportions_df = compute_feature_proportions(quant_df, metadata_df)
+    proportions_df, description_cols = compute_feature_proportions(quant_df, metadata_df)
     st.dataframe(proportions_df.head(), use_container_width=True)
-
+    st.session_state["description_cols"] = description_cols
     # Check for optional annotation merging
     if sirius_file and canopus_file and gnps_file:
         sirius_df = pd.read_csv(sirius_file, sep="\t")
@@ -32,5 +32,6 @@ if quant_file and metadata_file:
 
         annotated_df = merge_feature_annotations(proportions_df, sirius_df, canopus_df, gnps_df)
         st.success("Proportions merged with annotations.")
+        st.session_state["annotated_df"] = annotated_df
         st.dataframe(annotated_df, use_container_width=True)
 
