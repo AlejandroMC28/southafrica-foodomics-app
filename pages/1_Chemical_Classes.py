@@ -380,22 +380,26 @@ filtered_hierarchy = filtered[filtered[prob_col] >= prob_threshold]
 # Drop rows with all hierarchy levels missing
 hierarchy_df = filtered_hierarchy[hierarchy_cols].dropna(how="all")
 
-# Count occurrences for each path in the hierarchy
+# Count occurrences for each path in the hierarchy (integer count)
 hierarchy_counts = (
     hierarchy_df
-    .value_counts(subset=hierarchy_cols)
-    .reset_index()
-    .rename(columns={0: "count"})
+    .groupby(hierarchy_cols)
+    .size()
+    .reset_index(name="count")
 )
+hierarchy_counts["count"] = hierarchy_counts["count"].astype(int)  # Ensure integer
 
-# Sunburst plot
+hierarchy_counts = hierarchy_counts[hierarchy_cols + ["count"]]
+hierarchy_counts["count"] = hierarchy_counts["count"].astype(int)
+
 fig = px.sunburst(
     hierarchy_counts,
     path=hierarchy_cols,
     values="count",
-    color="count",
-    color_continuous_scale="Blues",
+    color="ClassyFire#superclass",  # or another hierarchy level
     title="Distribution of Chemical Ontology Classes"
 )
-fig.update_layout(margin=dict(t=40, l=0, r=0, b=0))
+fig.update_traces(
+    hovertemplate='<b>%{label}</b><br>Parent: %{parent}<br>Count: %{value:d}<extra></extra>'
+)
 st.plotly_chart(fig, use_container_width=True)
