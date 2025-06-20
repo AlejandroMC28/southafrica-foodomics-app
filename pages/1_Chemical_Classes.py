@@ -101,6 +101,7 @@ if (find_variable_classes or show_top_increasing or show_top_decreasing) and fc_
 
 # --- Select classes to plot (with session state override) ---
 available_classes = filtered[level].dropna().unique()
+default_classes = available_classes[:2] if len(available_classes) >= 2 else available_classes
 
 # Initialize session state for selected_class_list if not present.
 # This ensures that if the sidebar button hasn't been clicked yet,
@@ -114,7 +115,8 @@ if "selected_class_list" not in st.session_state:
 selected_classes = st.multiselect(
     f"Select {level} to plot",
     options=available_classes,
-    key=f"main_class_selector_{st.session_state['update_counter']}"  # Dynamic key forces refresh
+    default=default_classes,
+    key="selected_classes_bar"
 )
 
 # It's important to update the session state *after* the multiselect,
