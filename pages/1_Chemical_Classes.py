@@ -3,6 +3,7 @@ import pandas as pd
 import plotly.graph_objects as go
 import plotly.colors
 import numpy as np
+import plotly.express as px
 
 st.set_page_config(layout="wide")
 st.title("Chemical Class-Based Visualizations")
@@ -344,3 +345,57 @@ if "variable_classes" in st.session_state and st.session_state["variable_classes
     )
     
     st.plotly_chart(fig_comp, use_container_width=True)
+
+# --- Chemical Ontology Hierarchy Distribution ---
+st.markdown("### Chemical Ontology Hierarchy Distribution")
+
+# User selects which class level to filter by
+level_options = [
+    ("ClassyFire#superclass", "ClassyFire#superclass probability"),
+    ("ClassyFire#class", "ClassyFire#class Probability"),
+    ("ClassyFire#subclass", "ClassyFire#subclass Probability"),
+    ("ClassyFire#level 5", "ClassyFire#level 5 Probability"),
+]
+level_names = [x[0] for x in level_options]
+selected_level = st.selectbox("Select ontology level for probability filter", level_names)
+prob_col = dict(level_options)[selected_level]
+
+# Probability threshold slider
+prob_threshold = st.slider(
+    f"Minimum probability for {selected_level}",
+    min_value=0.0, max_value=1.0, value=0.7, step=0.01
+)
+
+# Prepare columns for hierarchy
+hierarchy_cols = [
+    "ClassyFire#superclass",
+    "ClassyFire#class",
+    "ClassyFire#subclass",
+    "ClassyFire#level 5"
+]
+
+# Filter by probability at the selected level
+filtered_hierarchy = filtered[filtered[prob_col] >= prob_threshold]
+
+# Drop rows with all hierarchy levels missing
+hierarchy_df = filtered_hierarchy[hierarchy_cols].dropna(how="all")
+
+# Count occurrences for each path in the hierarchy
+hierarchy_counts = (
+    hierarchy_df
+    .value_counts(subset=hierarchy_cols)
+    .reset_index()
+    .rename(columns={0: "count"})
+)
+
+# Sunburst plot
+fig = px.sunburst(
+    hierarchy_counts,
+    path=hierarchy_cols,
+    values="count",
+    color="count",
+    color_continuous_scale="Blues",
+    title="Distribution of Chemical Ontology Classes"
+)
+fig.update_layout(margin=dict(t=40, l=0, r=0, b=0))
+st.plotly_chart(fig, use_container_width=True)
